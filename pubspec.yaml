@@ -1,9 +1,9 @@
 name: khaleej_fx
 description: Enterprise GCC Fintech, Banking, Identity, VAT, and Utilities library for Flutter and Dart. Supports Saudi Arabia, UAE, Kuwait, Qatar, Bahrain, and Oman.
 version: 1.0.0
-homepage: https://github.com/example/khaleej_fx
-repository: https://github.com/example/khaleej_fx
-issue_tracker: https://github.com/example/khaleej_fx/issues
+homepage: https://github.com/Codernta/khaleej_fx
+repository: https://github.com/Codernta/khaleej_fx
+issue_tracker: https://github.com/Codernta/khaleej_fx/issues
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
