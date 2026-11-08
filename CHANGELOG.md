@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.1] - 2026-11-08
+
+### Security Hardening & Enterprise Enhancements
+
+Comprehensive security audit, side-channel timing attack mitigations, enhanced PII redaction (Saudi PDPL & UAE Data Protection Law compliance), expanded regional fintech gateway verifiers, secure-by-default UI controls, and memory protection.
+
+#### Security & Cryptography
+- **`TimingSafe`**:
+  - Hardened `equalString` and `equalBytes` with uniform instruction loops over maximum length to prevent execution-time side channels.
+  - Added `equalDigest` and `equalBytesDigest`: SHA-256 pre-hashing ensures comparisons occur on fixed 32-byte digests, eliminating length-leakage vulnerabilities for variable-length secrets (passwords, tokens, OTPs).
+  - Added `equalBytesStrict` for fixed-length cryptographic buffers.
+- **`SensitiveValue`**:
+  - Added `SensitiveValue.fromString` and `SensitiveValue.fromBytes` factory constructors.
+  - Fixed `operator ==` to utilize `TimingSafe.equalBytes` for byte arrays and `TimingSafe.equalString` for strings instead of reference or non-constant-time equality.
+  - Added `constantTimeEquals` method for explicit timing-safe secret comparisons.
+  - Hardened `zeroize()` memory scrubbing across byte buffers and string containers.
+- **`WebhookVerifier`**:
+  - Mandatory key validation: strictly rejects empty or whitespace secret keys and signatures upfront.
+  - Added signature prefix normalization (supports `sha256=`, `sha256:`, and `hex=`).
+  - Added `verifyWithTimestamp` with configurable tolerance window (default 5 minutes) to mitigate replay attacks.
+  - Added regional GCC payment gateway verifiers:
+    - **HyperPay** (`verifyHyperPay` with `X-Signature` HMAC-SHA256)
+    - **Tamara** (`verifyTamara` supporting both HMAC and Bearer token modes)
+    - **Tabby** (`verifyTabby` BNPL signature verification)
+    - **Stripe** (`verifyStripe` with `t=...,v1=...` parsing and timestamp replay mitigation)
+
+#### Privacy & PII Compliance (Saudi PDPL & UAE Data Protection)
+- **`KhaleejPiiRedactor`**:
+  - Added support for spaced and hyphen-grouped GCC IBANs (`SA03 8000 0000 6080 1016 7519`), which previously bypassed unformatted patterns.
+  - Added email address redaction (`[REDACTED_EMAIL]`).
+  - Added Eastern Arabic-Indic numerals (`٠-٩`) support across all national ID patterns (Saudi Citizen ID, Iqama, Emirates ID, Kuwait Civil ID, Qatar ID, Bahrain CPR) and GCC mobile numbers.
+  - Added Oman Civil ID context redaction (`[REDACTED_OMAN_CIVIL_ID]`).
+  - Expanded `_sensitiveKeys` dictionary covering API keys, access tokens, auth tokens, client secrets, session IDs, private keys, cookies, and JWTs.
+
+#### Masking & Privacy Controls
+- **`KhaleejId`**: Added `mask()` method across the base class and all 6 national ID implementations (`SaudiId`, `EmiratesId`, `KuwaitCivilId`, `QatarId`, `BahrainCpr`, `OmanCivilId`).
+- **`IbanValidator` & `GccIban`**: Added `mask()` (`SA** **** **** **** **** 7519`) for PCI DSS and PDPL compliant IBAN display.
+- **`CardMasker`**: Fixed short token leakage (inputs <= 4 digits now safely masked as `maskChar * len`); added `maskCvv` for CVV/CVC masking.
+
+#### UI Hardening & Resilience
+- **`KhaleejTextField`**:
+  - Secure-by-default: automatically obscures text and disables clipboard copying for `cvv` and `sensitiveSecret` inputs unless explicitly overridden.
+  - Input formatters (`EmiratesIdInputFormatter`, `SaudiIdInputFormatter`, `GccIbanInputFormatter`, `CardNumberInputFormatter`, `KuwaitCivilIdInputFormatter`) now automatically normalize Arabic-Indic digits to Western digits upon typing/pasting.
+- **`ZatcaQr` & `TlvCodec`**:
+  - Added `ZatcaQr.tryDecode` returning `null` instead of throwing unhandled exceptions on corrupt inputs.
+  - `TlvCodec` hardened with tag 0 validation, 1-byte extended length support (BER/DER), and safe decoding fallback in `TlvItem.valueAsText`.
+
+---
+
 ## [1.0.0] - 2026-11-06
 
 ### Initial Production Release

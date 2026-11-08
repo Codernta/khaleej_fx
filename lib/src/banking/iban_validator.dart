@@ -43,6 +43,10 @@ class GccIban {
   /// Formatted IBAN in 4-character blocks (e.g. `SA03 8000 0000 6080 1016 7519`).
   String get formatted => IbanValidator.format(raw);
 
+  /// Privacy-compliant masked representation of the IBAN (PDPL / PCI compliant).
+  String mask({String maskChar = '*', bool formatted = true}) =>
+      IbanValidator.mask(raw, maskChar: maskChar, formatted: formatted);
+
   @override
   String toString() => formatted;
 
@@ -214,6 +218,38 @@ class IbanValidator {
         buffer.write(' ');
       }
       buffer.write(clean[i]);
+    }
+    return buffer.toString();
+  }
+
+  /// Masks an IBAN for PCI DSS / PDPL compliance, preserving the country code and last 4 digits.
+  ///
+  /// Example: `SA03 8000 0000 6080 1016 7519` -> `SA** **** **** **** **** 7519`.
+  static String mask(
+    String iban, {
+    String maskChar = '*',
+    bool formatted = true,
+  }) {
+    final clean = iban.replaceAll(RegExp(r'\s+'), '').toUpperCase();
+    if (clean.length < 6) {
+      return maskChar * clean.length;
+    }
+
+    final country = clean.substring(0, 2);
+    final last4 = clean.substring(clean.length - 4);
+    final middleLen = clean.length - 6;
+    final maskedRaw = '$country${maskChar * middleLen}$last4';
+
+    if (!formatted) {
+      return maskedRaw;
+    }
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < maskedRaw.length; i++) {
+      if (i > 0 && i % 4 == 0) {
+        buffer.write(' ');
+      }
+      buffer.write(maskedRaw[i]);
     }
     return buffer.toString();
   }

@@ -90,6 +90,13 @@ class EmiratesId extends KhaleejId {
     return '${raw.substring(0, 3)}-${raw.substring(3, 7)}-${raw.substring(7, 14)}-${raw.substring(14, 15)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length != 15) return maskChar * raw.length;
+    // Format: 784-****-***1234-1
+    return '784-${maskChar * 4}-${maskChar * 3}${raw.substring(10, 14)}-${raw[14]}';
+  }
+
   /// Validates a raw or hyphenated Emirates ID string.
   static bool validate(String input) => EmiratesId.parse(input).isValid;
 }

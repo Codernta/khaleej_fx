@@ -57,8 +57,8 @@ void main() {
     });
   });
 
-  group('WebhookVerifier (Tap, Moyasar, Geidea, Checkout.com, PayTabs)', () {
-    test('verifies Tap / Moyasar / Geidea HMAC webhook signatures', () {
+  group('WebhookVerifier (Tap, Moyasar, Geidea, HyperPay, Tamara, Tabby, Stripe, PayTabs)', () {
+    test('verifies Tap / Moyasar / Geidea / HyperPay HMAC webhook signatures', () {
       const secret = 'sk_test_123456789';
       const body = '{"id":"chg_123","status":"CAPTURED","amount":100}';
       final validSig = KhaleejHash.hmacSha256Hex(key: secret, message: body);
@@ -81,12 +81,165 @@ void main() {
         isTrue,
       );
 
+      expect(
+        WebhookVerifier.verifyHyperPay(
+          rawBody: body,
+          secretKey: secret,
+          signature: validSig,
+        ),
+        isTrue,
+      );
+
       // Rejects forged signature
       expect(
         WebhookVerifier.verifyTap(
           rawBody: body,
           secretKey: secret,
           signature: 'invalid_forged_signature',
+        ),
+        isFalse,
+      );
+
+      // Strictly rejects empty or whitespace key
+      expect(
+        WebhookVerifier.verifyHmacSha256(
+          rawPayload: body,
+          secretKey: '   ',
+          signatureHeader: validSig,
+        ),
+        isFalse,
+      );
+    });
+
+    test('normalizes signature prefix like sha256= or hex=', () {
+      const secret = 'sec_xyz';
+      const body = '{"status":"ok"}';
+      final sig = KhaleejHash.hmacSha256Hex(key: secret, message: body);
+
+      expect(
+        WebhookVerifier.verifyHmacSha256(
+          rawPayload: body,
+          secretKey: secret,
+          signatureHeader: 'sha256=$sig',
+        ),
+        isTrue,
+      );
+
+      expect(
+        WebhookVerifier.verifyHmacSha256(
+          rawPayload: body,
+          secretKey: secret,
+          signatureHeader: 'HEX=$sig',
+        ),
+        isTrue,
+      );
+    });
+
+    test('mitigates replay attacks via verifyWithTimestamp and tolerance', () {
+      const secret = 'whsec_999';
+      const body = '{"event":"payment_received"}';
+      const fixedNow = 1700000000;
+
+      // Legitimate webhook within 60 seconds
+      const legitimateTs = fixedNow - 30;
+      final legitPayload = '$legitimateTs.$body';
+      final legitSig = KhaleejHash.hmacSha256Hex(key: secret, message: legitPayload);
+
+      expect(
+        WebhookVerifier.verifyWithTimestamp(
+          rawPayload: body,
+          secretKey: secret,
+          signatureHeader: legitSig,
+          timestampInSeconds: legitimateTs,
+          currentTimestampInSeconds: fixedNow,
+          tolerance: const Duration(minutes: 5),
+          includeTimestampInSignature: true,
+        ),
+        isTrue,
+      );
+
+      // Replayed webhook older than 5-minute tolerance (e.g. 10 minutes ago)
+      const expiredTs = fixedNow - 600;
+      final expiredPayload = '$expiredTs.$body';
+      final expiredSig = KhaleejHash.hmacSha256Hex(key: secret, message: expiredPayload);
+
+      expect(
+        WebhookVerifier.verifyWithTimestamp(
+          rawPayload: body,
+          secretKey: secret,
+          signatureHeader: expiredSig,
+          timestampInSeconds: expiredTs,
+          currentTimestampInSeconds: fixedNow,
+          tolerance: const Duration(minutes: 5),
+          includeTimestampInSignature: true,
+        ),
+        isFalse,
+      );
+    });
+
+    test('verifies Tamara and Tabby BNPL webhooks', () {
+      const body = '{"order_id":"tmr_555","status":"approved"}';
+      const token = 'tamara_sec_token_888';
+      final sig = KhaleejHash.hmacSha256Hex(key: token, message: body);
+
+      expect(
+        WebhookVerifier.verifyTamara(
+          rawBody: body,
+          notificationToken: token,
+          signatureOrToken: sig,
+        ),
+        isTrue,
+      );
+
+      expect(
+        WebhookVerifier.verifyTamara(
+          rawBody: body,
+          notificationToken: token,
+          signatureOrToken: token, // Bearer mode
+        ),
+        isTrue,
+      );
+
+      expect(
+        WebhookVerifier.verifyTabby(
+          rawBody: body,
+          secretKey: token,
+          signature: sig,
+        ),
+        isTrue,
+      );
+    });
+
+    test('verifies Stripe webhook header format with replay protection', () {
+      const secret = 'whsec_stripe_test';
+      const body = '{"type":"payment_intent.succeeded"}';
+      const fixedNow = 1700000000;
+      const ts = fixedNow - 10;
+      final sig = KhaleejHash.hmacSha256Hex(key: secret, message: '$ts.$body');
+      final header = 't=$ts,v1=$sig';
+
+      expect(
+        WebhookVerifier.verifyStripe(
+          rawBody: body,
+          secretKey: secret,
+          signatureHeader: header,
+          currentTimestampInSeconds: fixedNow,
+        ),
+        isTrue,
+      );
+
+      // Replay outside tolerance
+      const staleTs = fixedNow - 500;
+      final staleSig = KhaleejHash.hmacSha256Hex(key: secret, message: '$staleTs.$body');
+      final staleHeader = 't=$staleTs,v1=$staleSig';
+
+      expect(
+        WebhookVerifier.verifyStripe(
+          rawBody: body,
+          secretKey: secret,
+          signatureHeader: staleHeader,
+          currentTimestampInSeconds: fixedNow,
+          tolerance: const Duration(minutes: 5),
         ),
         isFalse,
       );
@@ -130,6 +283,15 @@ void main() {
 
       expect(TimingSafe.equalBytes(b1, b2), isTrue);
       expect(TimingSafe.equalBytes(b1, b3), isFalse);
+      expect(TimingSafe.equalBytesStrict(b1, b2), isTrue);
+      expect(TimingSafe.equalBytesStrict(b1, b3), isFalse);
+    });
+
+    test('constant-time digest equality prevents length leakage', () {
+      expect(TimingSafe.equalDigest('long_secret_password', 'long_secret_password'), isTrue);
+      expect(TimingSafe.equalDigest('long_secret_password', 'short'), isFalse);
+      expect(TimingSafe.equalBytesDigest([1, 2, 3, 4], [1, 2, 3, 4]), isTrue);
+      expect(TimingSafe.equalBytesDigest([1, 2, 3, 4], [1, 2]), isFalse);
     });
   });
 
@@ -144,6 +306,24 @@ void main() {
       secret.use((val) {
         expect(val, 'my_super_secret_otp_9999');
       });
+    });
+
+    test('supports factory constructors and constant-time equality', () {
+      final s1 = SensitiveValue.fromString('my_secret_token');
+      final s2 = SensitiveValue.fromString('my_secret_token');
+      final s3 = SensitiveValue.fromString('different_token');
+
+      expect(s1 == s2, isTrue);
+      expect(s1 == s3, isFalse);
+      expect(s1.constantTimeEquals(s2), isTrue);
+
+      final b1 = SensitiveValue.fromBytes([10, 20, 30]);
+      final b2 = SensitiveValue.fromBytes([10, 20, 30]);
+      final b3 = SensitiveValue.fromBytes([10, 20, 31]);
+
+      expect(b1 == b2, isTrue);
+      expect(b1 == b3, isFalse);
+      expect(b1.constantTimeEquals(b2), isTrue);
     });
 
     test('zeroizes memory buffer and blocks subsequent access', () {

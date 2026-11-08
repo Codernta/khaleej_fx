@@ -4,7 +4,7 @@
   <img src="doc/images/khaleej_fx_poster.jpg" alt="Khaleej FX - Complete GCC Financial & Identity Toolkit for Flutter" width="100%" />
 </p>
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.0.0-blue.svg)](https://pub.dev)
+[![Pub Version](https://img.shields.io/badge/pub-v1.0.1-blue.svg)](https://pub.dev)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2.svg?logo=dart)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -228,26 +228,42 @@ print(errors.isEmpty); // true
 - **`KhaleejPiiRedactor`**: Scans free text and recursively sanitizes nested Maps, redacting National IDs, Iqamas, Emirates IDs, IBANs, Cards, and phones in compliance with KSA & UAE PDPL.
 
 ```dart
-// Sensitive Secret Protection
-final secret = SensitiveValue<String>('super_secret_otp_4499');
+// Sensitive Secret Protection & Memory Zeroization
+final secret = SensitiveValue.fromString('super_secret_otp_4499');
 print(secret); // '[PROTECTED_VALUE]'
-secret.zeroize(); // wipes memory buffer
+secret.zeroize(); // wipes memory buffer and destroys reference
 
-// Pure-Dart RFC 6234 SHA-256 (NIST Verified)
-final hash = KhaleejHash.sha256Hex('abc');
+// Side-Channel Immune Constant-Time Equality
+TimingSafe.equalDigest(secretInput, storedHash);
 
-// Webhook Signature Verification
-final isValidWebhook = WebhookVerifier.verifyTap(
-  rawBody: payloadString,
-  secretKey: 'sk_test_123',
+// Webhook Verification (Tap, Moyasar, Geidea, HyperPay, Tamara, Tabby, Stripe)
+final isValid = WebhookVerifier.verifyHyperPay(
+  rawBody: rawPayload,
+  secretKey: 'merchant_secret',
   signature: signatureHeader,
 );
 
-// PDPL PII Redaction
-final cleanText = KhaleejPiiRedactor.redactText(
-  'User 1010101010 transferred to SA0380000000608010167519.',
+// Replay-Attack Mitigation with Timestamp Tolerance
+final isReplaySafe = WebhookVerifier.verifyWithTimestamp(
+  rawPayload: rawPayload,
+  secretKey: 'whsec_123',
+  signatureHeader: signatureHeader,
+  timestampInSeconds: timestampHeader,
+  tolerance: const Duration(minutes: 5),
 );
-// Output: 'User [REDACTED_CITIZEN_ID] transferred to [REDACTED_IBAN_SA_...7519].'
+
+// Privacy & PDPL Masking
+final saudiId = SaudiId.parse('1010101018');
+print(saudiId.mask()); // '1*******18'
+
+final iban = IbanValidator.validate('SA0380000000608010167519');
+print(iban.mask()); // 'SA** **** **** **** **** 7519'
+
+// PDPL PII Redaction (Free text, emails, formatted IBANs, and Arabic-Indic numerals)
+final cleanText = KhaleejPiiRedactor.redactText(
+  'المواطن ١٠١٠١٠١٠١٠ sent funds to SA03 8000 0000 6080 1016 7519, contact ahmed@bank.sa',
+);
+// Output: 'المواطن [REDACTED_CITIZEN_ID] sent funds to [REDACTED_IBAN_SA_...7519], contact [REDACTED_EMAIL]'
 ```
 
 ---

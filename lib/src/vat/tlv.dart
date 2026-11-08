@@ -33,8 +33,14 @@ class TlvItem {
   /// Length of payload in bytes.
   int get length => value.length;
 
-  /// Decodes payload as UTF-8 string.
-  String get valueAsText => utf8.decode(value);
+  /// Decodes payload as UTF-8 string with safe fallback.
+  String get valueAsText {
+    try {
+      return utf8.decode(value);
+    } catch (_) {
+      return String.fromCharCodes(value);
+    }
+  }
 
   @override
   String toString() => 'TlvItem(tag: $tag, len: $length, val: $valueAsText)';
@@ -82,9 +88,18 @@ class TlvCodec {
       }
 
       final tag = bytes[offset++];
+      if (tag == 0) {
+        throw FormatException('Invalid ZATCA TLV tag 0 at offset ${offset - 1}');
+      }
+
       var len = bytes[offset++];
 
-      if (len == 0x82) {
+      if (len == 0x81) {
+        if (offset + 1 > bytes.length) {
+          throw FormatException('Unexpected EOF reading 1-byte extended length at offset $offset');
+        }
+        len = bytes[offset++];
+      } else if (len == 0x82) {
         // Multi-byte length
         if (offset + 2 > bytes.length) {
           throw FormatException('Unexpected EOF reading multi-byte length at offset $offset');
@@ -94,7 +109,7 @@ class TlvCodec {
         len = (b1 << 8) | b2;
       }
 
-      if (offset + len > bytes.length) {
+      if (len < 0 || offset + len > bytes.length) {
         throw FormatException(
           'TLV payload truncated for tag $tag: expected $len bytes, available ${bytes.length - offset}',
         );

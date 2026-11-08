@@ -138,6 +138,13 @@ class KuwaitCivilId extends KhaleejId {
     return '${raw.substring(0, 1)} ${raw.substring(1, 7)} ${raw.substring(7, 11)} ${raw.substring(11, 12)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length != 12) return maskChar * raw.length;
+    // Format: 2*********34
+    return '${raw[0]}${maskChar * 9}${raw.substring(10)}';
+  }
+
   /// Computes the PACI check digit for an 11-digit prefix. Returns null if remainder == 1.
   static int? calculateCheckDigit(String prefix11) {
     if (prefix11.length != 11 || !RegExp(r'^\d+$').hasMatch(prefix11)) return null;

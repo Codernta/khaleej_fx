@@ -183,5 +183,26 @@ void main() {
       expect(uaeId, isA<EmiratesId>());
       expect(uaeId.country, GccCountry.uae);
     });
+
+    test('masks national IDs compliant with PDPL privacy requirements', () {
+      final saudi = SaudiId.parse('1010101018');
+      expect(saudi.mask(), '1*******18');
+      expect(saudi.mask(maskChar: '#'), '1#######18');
+
+      final emirates = EmiratesId.parse('784-1990-1234567-1');
+      expect(emirates.mask(), '784-****-***4567-1');
+
+      final kuwait = KuwaitCivilId.parse('290010101236');
+      expect(kuwait.mask(), '2*********36');
+
+      final qatar = QatarId.parse('29063401238');
+      expect(qatar.mask(), '2********38');
+
+      final bahrain = BahrainCpr.parse('900101238');
+      expect(bahrain.mask(), '90*****38');
+
+      final oman = OmanCivilId.parse('12345678');
+      expect(oman.mask(), '12****78');
+    });
   });
 }

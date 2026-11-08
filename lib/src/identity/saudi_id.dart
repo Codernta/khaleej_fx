@@ -85,6 +85,13 @@ class SaudiId extends KhaleejId {
     return '${raw.substring(0, 1)} ${raw.substring(1, 5)} ${raw.substring(5, 10)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length != 10) return maskChar * raw.length;
+    // Preserves 1st digit (Citizen vs Resident indicator) and last 2 digits
+    return '${raw[0]}${maskChar * 7}${raw.substring(8)}';
+  }
+
   /// Validates a raw Saudi ID string.
   static bool validate(String input) => SaudiId.parse(input).isValid;
 }

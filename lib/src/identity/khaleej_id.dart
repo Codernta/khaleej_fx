@@ -30,6 +30,9 @@ abstract class KhaleejId {
   /// Formatted representation according to the country's official convention.
   String get formatted;
 
+  /// Returns a privacy-compliant masked representation of this national ID (PDPL compliant).
+  String mask({String maskChar = '*'});
+
   /// Unified factory to parse an ID string for a specific [country] or auto-detect.
   static KhaleejId parse(String input, {GccCountry? country}) {
     if (country != null) {

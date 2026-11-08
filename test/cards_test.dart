@@ -131,5 +131,12 @@ void main() {
       );
       expect(masked, '4176-33**-****-1234');
     });
+
+    test('masks short tokens and CVVs without exposing plaintext', () {
+      expect(CardMasker.mask('1234', maskChar: 'X'), 'XXXX');
+      expect(CardMasker.mask('123', maskChar: 'X'), 'XXX');
+      expect(CardMasker.maskCvv('789'), '•••');
+      expect(CardMasker.maskCvv('1234', maskChar: '*'), '****');
+    });
   });
 }

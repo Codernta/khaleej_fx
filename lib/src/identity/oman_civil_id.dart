@@ -49,6 +49,13 @@ class OmanCivilId extends KhaleejId {
     return '${raw.substring(0, 4)} ${raw.substring(4, 8)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length < 7) return maskChar * raw.length;
+    // Format: 12****78
+    return '${raw.substring(0, 2)}${maskChar * (raw.length - 4)}${raw.substring(raw.length - 2)}';
+  }
+
   /// Validates an Omani Civil ID string.
   static bool validate(String input) => OmanCivilId.parse(input).isValid;
 }

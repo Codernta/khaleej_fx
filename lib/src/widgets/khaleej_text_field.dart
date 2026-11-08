@@ -72,8 +72,8 @@ class KhaleejTextField extends StatefulWidget {
     this.selectedCountry = GccCountry.saudiArabia,
     this.onCountryChanged,
     this.showCountrySelector = false,
-    this.disableClipboard = false,
-    this.obscureText = false,
+    this.disableClipboard,
+    this.obscureText,
     this.showObscureToggle = false,
     this.validator,
     this.onChanged,
@@ -96,8 +96,8 @@ class KhaleejTextField extends StatefulWidget {
   final GccCountry selectedCountry;
   final ValueChanged<GccCountry>? onCountryChanged;
   final bool showCountrySelector;
-  final bool disableClipboard;
-  final bool obscureText;
+  final bool? disableClipboard;
+  final bool? obscureText;
   final bool showObscureToggle;
   final FormFieldValidator<String>? validator;
   final ValueChanged<String>? onChanged;
@@ -122,7 +122,9 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
   @override
   void initState() {
     super.initState();
-    _obscured = widget.obscureText;
+    final isSensitive = widget.inputType == KhaleejInputType.sensitiveSecret ||
+        widget.inputType == KhaleejInputType.cvv;
+    _obscured = widget.obscureText ?? isSensitive;
     _country = widget.selectedCountry;
   }
 
@@ -196,6 +198,10 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
       suffixIcon: suffix,
     );
 
+    final isSensitive = widget.inputType == KhaleejInputType.sensitiveSecret ||
+        widget.inputType == KhaleejInputType.cvv;
+    final effectiveDisableClipboard = widget.disableClipboard ?? isSensitive;
+
     return TextFormField(
       controller: widget.controller,
       focusNode: widget.focusNode,
@@ -210,8 +216,8 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
       // Security hardening flags
       autocorrect: false,
       enableSuggestions: false,
-      enableInteractiveSelection: !widget.disableClipboard,
-      contextMenuBuilder: widget.disableClipboard
+      enableInteractiveSelection: !effectiveDisableClipboard,
+      contextMenuBuilder: effectiveDisableClipboard
           ? (context, editableTextState) => const SizedBox.shrink()
           : null,
 

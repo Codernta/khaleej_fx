@@ -1,13 +1,17 @@
 import 'package:flutter/services.dart';
+import '../utils/numeral_converter.dart';
 
 /// Formatter for Emirates ID: automatically produces `784-YYYY-XXXXXXX-C`.
+///
+/// Automatically converts Eastern Arabic-Indic numerals (`٠-٩`) to Western digits.
 class EmiratesIdInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final normalized = NumeralConverter.toWesternArabic(newValue.text);
+    final digits = normalized.replaceAll(RegExp(r'\D'), '');
     if (digits.isEmpty) {
       return newValue.copyWith(text: '');
     }
@@ -29,6 +33,8 @@ class EmiratesIdInputFormatter extends TextInputFormatter {
 }
 
 /// Formatter for Saudi National ID or Iqama: limits to 10 digits and optional grouping.
+///
+/// Automatically converts Eastern Arabic-Indic numerals (`٠-٩`) to Western digits.
 class SaudiIdInputFormatter extends TextInputFormatter {
   SaudiIdInputFormatter({this.grouped = false});
 
@@ -39,7 +45,8 @@ class SaudiIdInputFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final normalized = NumeralConverter.toWesternArabic(newValue.text);
+    final digits = normalized.replaceAll(RegExp(r'\D'), '');
     final limited = digits.length > 10 ? digits.substring(0, 10) : digits;
 
     if (!grouped || limited.length < 5) {
@@ -66,14 +73,16 @@ class SaudiIdInputFormatter extends TextInputFormatter {
 }
 
 /// Formatter for GCC IBANs: uppercases characters and spaces in 4-character blocks.
+///
+/// Automatically converts Eastern Arabic-Indic numerals (`٠-٩`) to Western digits.
 class GccIbanInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final clean =
-        newValue.text.replaceAll(RegExp(r'\s+'), '').toUpperCase();
+    final normalized = NumeralConverter.toWesternArabic(newValue.text);
+    final clean = normalized.replaceAll(RegExp(r'\s+'), '').toUpperCase();
     final buffer = StringBuffer();
 
     for (var i = 0; i < clean.length && i < 34; i++) {
@@ -92,13 +101,16 @@ class GccIbanInputFormatter extends TextInputFormatter {
 }
 
 /// Formatter for payment card PAN: 4-4-4-4 grouping or 4-6-5 for Amex.
+///
+/// Automatically converts Eastern Arabic-Indic numerals (`٠-٩`) to Western digits.
 class CardNumberInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final normalized = NumeralConverter.toWesternArabic(newValue.text);
+    final digits = normalized.replaceAll(RegExp(r'\D'), '');
     final limited = digits.length > 19 ? digits.substring(0, 19) : digits;
 
     final isAmex = limited.startsWith('34') || limited.startsWith('37');
@@ -129,13 +141,16 @@ class CardNumberInputFormatter extends TextInputFormatter {
 }
 
 /// Formatter for Kuwait Civil ID (12 digits with grouping).
+///
+/// Automatically converts Eastern Arabic-Indic numerals (`٠-٩`) to Western digits.
 class KuwaitCivilIdInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    final digits = newValue.text.replaceAll(RegExp(r'\D'), '');
+    final normalized = NumeralConverter.toWesternArabic(newValue.text);
+    final digits = normalized.replaceAll(RegExp(r'\D'), '');
     final limited = digits.length > 12 ? digits.substring(0, 12) : digits;
 
     final buffer = StringBuffer();

@@ -90,5 +90,44 @@ void main() {
       expect(find.text('DUBAI'), findsOneWidget);
       expect(find.text('99999'), findsOneWidget);
     });
+
+    testWidgets('KhaleejTextField obscures CVV and sensitive secrets by default', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: KhaleejTextField(
+              inputType: KhaleejInputType.cvv,
+              label: 'CVV Code',
+            ),
+          ),
+        ),
+      );
+
+      final editableText = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editableText.obscureText, isTrue);
+      // Clipboard interaction is disabled by default for sensitive inputs
+      expect(editableText.enableInteractiveSelection, isFalse);
+    });
+
+    testWidgets('EmiratesIdInputFormatter normalizes Arabic-Indic numerals', (tester) async {
+      final controller = TextEditingController();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: KhaleejTextField(
+              controller: controller,
+              inputType: KhaleejInputType.emiratesId,
+            ),
+          ),
+        ),
+      );
+
+      // Enter digits in Arabic-Indic numerals
+      await tester.enterText(find.byType(TextFormField), '٧٨٤١٩٩٠١٢٣٤٥٦٧١');
+      await tester.pump();
+
+      expect(controller.text, '784-1990-1234567-1');
+    });
   });
 }

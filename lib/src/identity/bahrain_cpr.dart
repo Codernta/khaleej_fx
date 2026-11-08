@@ -94,6 +94,13 @@ class BahrainCpr extends KhaleejId {
     return '${raw.substring(0, 4)} ${raw.substring(4, 8)} ${raw.substring(8, 9)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length != 9) return maskChar * raw.length;
+    // Format: 90*****34
+    return '${raw.substring(0, 2)}${maskChar * 5}${raw.substring(7)}';
+  }
+
   /// Computes the check digit for an 8-digit Bahrain CPR prefix.
   static int calculateCheckDigit(String prefix8) {
     var sum = 0;

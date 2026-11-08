@@ -143,5 +143,24 @@ void main() {
       expect(errors.any((e) => e.contains('15 digits')), isTrue);
       expect(errors.any((e) => e.contains('cannot exceed')), isTrue);
     });
+
+    test('tryDecode safely parses valid QR and returns null on corrupted payload', () {
+      final invoice = ZatcaInvoice(
+        sellerName: 'Safe Corp',
+        vatRegistrationNumber: '300000000000003',
+        timestamp: DateTime.parse('2023-11-01T10:00:00Z'),
+        invoiceTotal: '100.00',
+        vatTotal: '15.00',
+      );
+      final encoded = ZatcaQr.encode(invoice);
+
+      final validResult = ZatcaQr.tryDecode(encoded);
+      expect(validResult, isNotNull);
+      expect(validResult!.sellerName, 'Safe Corp');
+
+      // Corrupted / malformed input
+      expect(ZatcaQr.tryDecode('not_a_valid_base64_tlv_!@#'), isNull);
+      expect(ZatcaQr.tryDecode(''), isNull);
+    });
   });
 }

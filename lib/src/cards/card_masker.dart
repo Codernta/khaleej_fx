@@ -18,8 +18,8 @@ class CardMasker {
   }) {
     final clean = pan.replaceAll(RegExp(r'\D'), '');
     if (clean.length < 10) {
-      // Too short to safely mask with BIN+last4, mask all but last 2
-      if (clean.length <= 4) return clean;
+      // Prevents leaking short secrets (e.g. 3-4 digit tokens or PINs)
+      if (clean.length <= 4) return maskChar * clean.length;
       return '${maskChar * (clean.length - 4)}${clean.substring(clean.length - 4)}';
     }
 
@@ -49,6 +49,12 @@ class CardMasker {
       buffer.write(rawMasked[i]);
     }
     return buffer.toString();
+  }
+
+  /// Securely masks a Card Verification Value (CVV / CVC).
+  static String maskCvv(String cvv, {String maskChar = '•'}) {
+    final clean = cvv.replaceAll(RegExp(r'\D'), '');
+    return maskChar * clean.length;
   }
 
   /// Formats a card PAN into 4-character blocks or 4-6-5 blocks for Amex.

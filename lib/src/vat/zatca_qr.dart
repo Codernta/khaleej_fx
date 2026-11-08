@@ -141,6 +141,18 @@ class ZatcaQr {
     return base64.encode(rawBytes);
   }
 
+  /// Safely attempts to decode a ZATCA Base64 TLV string back into a [ZatcaInvoice].
+  ///
+  /// Returns `null` if the input is malformed, corrupted, or missing mandatory tags,
+  /// preventing unhandled exceptions from interrupting transaction flows.
+  static ZatcaInvoice? tryDecode(String base64Qr) {
+    try {
+      return decode(base64Qr);
+    } catch (_) {
+      return null;
+    }
+  }
+
   /// Decodes a ZATCA Base64 TLV string back into a [ZatcaInvoice].
   static ZatcaInvoice decode(String base64Qr) {
     final rawBytes = base64.decode(base64Qr.trim());

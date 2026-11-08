@@ -140,5 +140,15 @@ void main() {
         isFalse,
       );
     });
+
+    test('masks IBAN preserving country code and last 4 digits', () {
+      const rawIban = 'SA0380000000608010167519';
+      final masked = IbanValidator.mask(rawIban);
+      expect(masked, 'SA** **** **** **** **** 7519');
+
+      final ibanObj = IbanValidator.validate(rawIban);
+      expect(ibanObj.mask(), 'SA** **** **** **** **** 7519');
+      expect(ibanObj.mask(formatted: false), 'SA******************7519');
+    });
   });
 }

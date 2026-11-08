@@ -102,6 +102,13 @@ class QatarId extends KhaleejId {
     return '${raw.substring(0, 3)} ${raw.substring(3, 6)} ${raw.substring(6, 11)}';
   }
 
+  @override
+  String mask({String maskChar = '*'}) {
+    if (raw.length != 11) return maskChar * raw.length;
+    // Format: 2********34
+    return '${raw[0]}${maskChar * 8}${raw.substring(9)}';
+  }
+
   /// Computes the check digit for a 10-digit Qatar ID prefix.
   static int calculateCheckDigit(String prefix10) {
     var sum = 0;
