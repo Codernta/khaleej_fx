@@ -1,10 +1,10 @@
 # Khaleej FX (خـلـيـج FX) 🇸🇦 🇦🇪 🇰🇼 🇶🇦 🇧🇭 🇴🇲
 
 <p align="center">
-  <img src="doc/images/khaleej_fx_poster.jpg" alt="Khaleej FX - Complete GCC Financial & Identity Toolkit for Flutter" width="100%" />
+  <img src="https://raw.githubusercontent.com/Codernta/khaleej_fx/main/doc/images/khaleej_fx_poster.jpg" alt="Khaleej FX - Complete GCC Financial & Identity Toolkit for Flutter" width="100%" />
 </p>
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.0.1-blue.svg)](https://pub.dev)
+[![Pub Version](https://img.shields.io/badge/pub-v1.0.2-blue.svg)](https://pub.dev/packages/khaleej_fx)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2.svg?logo=dart)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)

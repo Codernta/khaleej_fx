@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.2] - 2026-11-08
+
+### Documentation & Asset Fix
+- **`README.md`**:
+  - Fixed banner poster image rendering on pub.dev and external renderers by switching from relative local asset path (`doc/images/khaleej_fx_poster.jpg`) to absolute GitHub raw asset URL (`https://raw.githubusercontent.com/Codernta/khaleej_fx/main/doc/images/khaleej_fx_poster.jpg`).
+  - Updated pub version badge to `v1.0.2` pointing to `https://pub.dev/packages/khaleej_fx`.
+
+---
+
 ## [1.0.1] - 2026-11-08
 
 ### Security Hardening & Enterprise Enhancements
