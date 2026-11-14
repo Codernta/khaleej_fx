@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.0.3] - 2026-11-14
+
+### Added - B2B KYB Identity, Telco Intelligence, SAMA PIN Hardening, Pegged FX & QA Generator
+
+- **B2B / KYB Business Entity Verification**:
+  - `SaudiCr`: Saudi Commercial Registration (السجل التجاري) validator identifying regional chamber/city branch codes (Riyadh `1010`, Jeddah `4030`, Dammam `2050`, etc.) with formatting and privacy masking.
+  - `Saudi700Number`: Unified National Establishment Number (الرقم الموحد 700) validator for KSA corporate entities, institutions, and government authorities.
+  - `UaeTrn`: UAE Federal Tax Authority (FTA) Tax Registration Number (15 digits starting with `100` and ending in `0003`) for Corporate Tax and VAT.
+  - `KhaleejBusinessId`: Unified parser and auto-detection engine for GCC commercial and tax identifiers.
+  - `KhaleejTextField`: Added support for `KhaleejInputType.saudiCr`, `KhaleejInputType.saudi700`, and `KhaleejInputType.uaeTrn`.
+
+- **GCC Telecom Carrier & Phone Intelligence**:
+  - `KhaleejPhone`: High-precision mobile phone number parser, normalizer, and validator across all 6 GCC member states.
+  - `GccCarrier`: Detailed carrier detection for STC, Mobily, Zain, Virgin Mobile, Salam, Red Bull Mobile (KSA), e& / Etisalat, du, Virgin (UAE), Zain, Ooredoo, stc (Kuwait & Bahrain), Ooredoo, Vodafone (Qatar), Omantel, Ooredoo, Vodafone (Oman).
+  - Normalizes to E.164 (`+966501234567`), national display (`050 123 4567`), and privacy-compliant PDPL masking (`+966 50 *** 4567`).
+
+- **SAMA Cybersecurity Framework PIN Validator**:
+  - `SamaPinValidator`: Mandatory constraint validation for mobile banking MPINs and ATM PINs.
+  - Rejects sequential numbers (`1234`, `4321`), repeating identical digits (`1111`, `0000`), alternating repeating patterns (`1212`, `1010`), and personal PII matches (birth year, birth date, National ID suffix, mobile phone suffix).
+  - Bilingual regulatory error reporting in Arabic and English.
+
+- **Pegged FX Cross-Rate Engine & Zakat Calculator**:
+  - `KhaleejMoney.fromUsd`: Direct conversion from US Dollars to any GCC currency using official central bank parities.
+  - `KhaleejMoney.convertToPegged`: Subunit integer-precision cross-rate conversions between SAR (3.7500), AED (3.6725), QAR (3.6400), BHD (0.3760), OMR (0.3845), and KWD (0.3075) without floating-point inaccuracies.
+  - `KhaleejZakat`: Statutory Zakat calculation supporting Hijri lunar years (2.5%) and Gregorian solar years (2.5775%) per AAOIFI Shari'ah Standard No. 35 and ZATCA regulations.
+  - `calculateGoldNisab` (85g) and `calculateSilverNisab` (595g) threshold evaluators in local GCC currencies.
+
+- **Synthetic Mock Data Generator (`KhaleejMock`)**:
+  - `KhaleejMock`: Production-grade mock data generator for QA, CI, and test fixtures without exposing real customer PII.
+  - Generates algorithmically verified Saudi IDs (Luhn), Emirates IDs (Luhn), Kuwait Civil IDs (PACI Mod 11), Qatar IDs, Bahrain CPRs, Oman Civil IDs, ISO 13616 IBANs (Mod 97-10), and GCC domestic switch cards (Mada, Jaywan, KNET, Benefit, Himyan, OmanNet).
+
+---
+
 ## [1.0.2] - 2026-11-08
 
 ### Documentation & Asset Fix

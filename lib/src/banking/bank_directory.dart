@@ -443,6 +443,10 @@ class BankDirectory {
     ),
   ];
 
+  /// Returns all known banks for a given [country].
+  static List<BankInfo> banksFor(GccCountry country) =>
+      banks.where((b) => b.country == country).toList();
+
   /// Finds [BankInfo] by bank code and country.
   static BankInfo? findBank(GccCountry country, String bankCode) {
     final clean = bankCode.trim().toUpperCase();

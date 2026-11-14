@@ -4,7 +4,7 @@
   <img src="https://raw.githubusercontent.com/Codernta/khaleej_fx/main/doc/images/khaleej_fx_poster.jpg" alt="Khaleej FX - Complete GCC Financial & Identity Toolkit for Flutter" width="100%" />
 </p>
 
-[![Pub Version](https://img.shields.io/badge/pub-v1.0.2-blue.svg)](https://pub.dev/packages/khaleej_fx)
+[![Pub Version](https://img.shields.io/badge/pub-v1.0.3-blue.svg)](https://pub.dev/packages/khaleej_fx)
 [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2.svg?logo=dart)](https://dart.dev)
 [![Flutter](https://img.shields.io/badge/Flutter-3.0+-02569B.svg?logo=flutter)](https://flutter.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -25,21 +25,25 @@ An enterprise-grade, high-precision GCC Fintech, Banking, Identity, VAT, and Uti
 
 ```mermaid
 graph TD
-    A[Khaleej FX Suite] --> B[Fixed-Point Money & Tafqeet]
-    A --> C[GCC Identity & Civil Numbers]
+    A[Khaleej FX Suite] --> B[Fixed-Point Money, FX & Zakat]
+    A --> C[GCC Civil & B2B KYB Identity]
     A --> D[ISO 13616 IBAN & Bank Directory]
     A --> E[Cards & Domestic Switches]
     A --> F[VAT & ZATCA e-Invoicing]
-    A --> G[Fintech Security & PDPL Redaction]
+    A --> G[Fintech Security & SAMA CSF]
     A --> H[Hardened UI Widgets & Plates]
+    A --> I[Telecom Carrier Intelligence]
+    A --> J[Synthetic QA Mock Generator]
 
     B --> B1[2 & 3 Decimals Subunit Precision]
     B --> B2[Grammar-Aware Arabic Tafqeet]
+    B --> B3[Pegged FX Parity & Zakat Engine]
 
     C --> C1[Saudi National ID & Iqama Luhn]
     C --> C2[Emirates ID 784-YYYY-XXXXXXX-C]
     C --> C3[Kuwait Civil ID PACI Modulo 11]
     C --> C4[Qatar, Bahrain & Oman Civil IDs]
+    C --> C5[Saudi CR, 700 Number & UAE TRN]
 
     D --> D1[ISO 7064 Mod 97-10 Checksum]
     D --> D2[GCC Bank Code to SWIFT/BIC Directory]
@@ -53,6 +57,11 @@ graph TD
     G --> G1[TimingSafe Constant-Time Comparison]
     G --> G2[Pure-Dart RFC 6234 SHA-256 & HMAC]
     G --> G3[KSA & UAE PDPL PII Redaction]
+    G --> G4[SAMA Cybersecurity PIN Policy]
+
+    I --> I1[STC, Mobily, Zain, e&, du, Ooredoo, Batelco]
+
+    J --> J1[PDPL-Compliant Valid Synthetic Test Data]
 ```
 
 ---
@@ -79,6 +88,17 @@ final vat = total.percentage(15); // 225.19 SAR
 print(total.format()); // '1,501.25 SAR'
 print(total.format(useArabicSymbol: true)); // '1,501.25 ر.س'
 print(total.format(useArabicNumerals: true)); // '١٬٥٠١٫٢٥ ر.س'
+
+// Pegged FX Cross-Rate Conversions (Integer subunit exact parity)
+final inAed = total.convertToPegged(KhaleejCurrency.aed); // '1,470.17 AED'
+final fromUsd = KhaleejMoney.fromUsd(100, KhaleejCurrency.sar); // '375.00 SAR'
+
+// Statutory Zakat Calculation (2.5% Hijri / 2.5775% Gregorian per AAOIFI Standard No. 35)
+final zakat = KhaleejZakat.calculate(
+  wealth: total,
+  yearType: IslamicCalendarYear.hijri,
+);
+print(zakat.zakatDue.format()); // '37.53 SAR'
 ```
 
 ### 2. Tafqeet (Arabic & English Number-to-Words)
@@ -138,7 +158,38 @@ print(parsedId.country); // GccCountry.kuwait
 
 ---
 
-### 4. GCC Banking, ISO 13616 IBAN & Bank Directory
+### 4. B2B Commercial Registrations & Business Entities (`KhaleejBusinessId`)
+
+Validates enterprise business entities, chamber of commerce regional branch codes, and tax identification numbers for corporate onboarding and KYB:
+- 🇸🇦 **Saudi Commercial Registration (`SaudiCr`)**: 10 digits with chamber resolution (Riyadh `1010`, Jeddah `4030`, Dammam `2050`, Abha `5850`, etc.).
+- 🇸🇦 **Saudi 700 Number (`Saudi700Number`)**: Unified National Establishment Number (`700xxxxxxx`).
+- 🇦🇪 **UAE FTA TRN (`UaeTrn`)**: 15-digit Tax Registration Number (`100-XXXX-XXXX-0003`) for Corporate Tax & VAT.
+
+```dart
+// Saudi Commercial Registration
+final cr = SaudiCr.parse('1010123456');
+if (cr.isValid) {
+  print(cr.cityNameEn); // 'Riyadh'
+  print(cr.formatted);  // '1010-123456'
+  print(cr.mask());       // '1010****56'
+}
+
+// Saudi 700 Unified Establishment Number
+final s700 = Saudi700Number.parse('7001234567');
+print(s700.formatted); // '700 123 4567'
+
+// UAE Tax Registration Number
+final trn = UaeTrn.parse('100123456780003');
+print(trn.formattedWithHyphens); // '100-1234-5678-0003'
+
+// Auto-detect any GCC Business ID
+final biz = KhaleejBusinessId.parse('7009876543');
+print(biz.type); // KhaleejBusinessIdType.saudi700
+```
+
+---
+
+### 5. GCC Banking, ISO 13616 IBAN & Bank Directory
 
 Full ISO 13616 format check and ISO 7064 Mod 97-10 verification for all 6 GCC countries:
 
@@ -162,7 +213,7 @@ final isConfirmed = IbanValidator.confirmIban(
 
 ---
 
-### 5. Domestic Payment Switches & PCI DSS 4.0 Masking
+### 6. Domestic Payment Switches & PCI DSS 4.0 Masking
 
 Identifies domestic card networks and provides PCI DSS v4.0 Requirement 3.4 compliant masking:
 - 🇸🇦 **Mada** (Saudi Arabia)
@@ -187,7 +238,7 @@ print(card.mask(preserveBin: true));  // '4176 33XX XXXX 0008'
 
 ---
 
-### 6. GCC VAT & ZATCA FATOORAH Phase 1 & 2 TLV QR Code
+### 7. GCC VAT & ZATCA FATOORAH Phase 1 & 2 TLV QR Code
 
 Zero-dependency Tag-Length-Value (TLV) byte encoder and decoder formatted as Base64 for Saudi ZATCA e-Invoicing:
 
@@ -219,8 +270,9 @@ print(errors.isEmpty); // true
 
 ---
 
-### 7. Enterprise Fintech Security & PDPL Redaction
+### 8. Enterprise Fintech Security & SAMA Compliance
 
+- **`SamaPinValidator`**: Enforces SAMA Cybersecurity Framework constraints for mobile banking MPINs and card PINs (blocks repeating, sequential, alternating patterns, and personal data matches).
 - **`TimingSafe`**: Constant-time equality checks for OTPs, signatures, and credentials.
 - **`SensitiveValue<T>`**: Wraps secrets, overrides `toString()`/`toJson()` with `[PROTECTED_VALUE]`, and exposes `.zeroize()` to overwrite memory buffers immediately after use.
 - **`KhaleejHash`**: Pure-Dart RFC 6234 SHA-256 and RFC 2104 HMAC-SHA256 implementations verified against official NIST test vectors.
@@ -228,6 +280,15 @@ print(errors.isEmpty); // true
 - **`KhaleejPiiRedactor`**: Scans free text and recursively sanitizes nested Maps, redacting National IDs, Iqamas, Emirates IDs, IBANs, Cards, and phones in compliance with KSA & UAE PDPL.
 
 ```dart
+// SAMA Cybersecurity PIN Enforcement
+final pinCheck = SamaPinValidator.validate(
+  pin: '1234',
+  birthYear: 1995,
+  phoneNumber: '0501234567',
+);
+print(pinCheck.isValid); // false
+print(pinCheck.messageAr); // 'لا يمكن أن يتكون الرمز من أرقام متسلسلة تصاعدياً أو تنازلياً.'
+
 // Sensitive Secret Protection & Memory Zeroization
 final secret = SensitiveValue.fromString('super_secret_otp_4499');
 print(secret); // '[PROTECTED_VALUE]'
@@ -268,17 +329,17 @@ final cleanText = KhaleejPiiRedactor.redactText(
 
 ---
 
-### 8. Hardened UI Widgets
+### 9. Hardened UI Widgets
 
 #### `KhaleejTextField`
-Drop-in `TextFormField` hardened with anti-keylogging (`enableSuggestions: false`, `autocorrect: false`), anti-clipboard guards, automatic formatters, and GCC country selector:
+Drop-in `TextFormField` hardened with anti-keylogging (`enableSuggestions: false`, `autocorrect: false`), anti-clipboard guards, automatic formatters, and GCC country selector. Supports national IDs, B2B Commercial Registrations (`saudiCr`), 700 numbers (`saudi700`), and UAE TRN (`uaeTrn`):
 
 ```dart
 KhaleejTextField(
-  inputType: KhaleejInputType.emiratesId,
-  label: 'Emirates ID',
+  inputType: KhaleejInputType.saudiCr,
+  label: 'Saudi Commercial Registration',
   showCountrySelector: true,
-  selectedCountry: GccCountry.uae,
+  selectedCountry: GccCountry.saudiArabia,
   disableClipboard: false,
 )
 ```
@@ -311,6 +372,49 @@ GccVehiclePlateWidget.uae(
   uaeEmirate: 'DUBAI',
   uaePlateCode: 'A',
 )
+```
+
+---
+
+### 10. GCC Telecom Carrier & Phone Intelligence (`KhaleejPhone`)
+
+Validates, formats, and identifies operators across GCC mobile networks (STC, Mobily, Zain, Virgin Mobile, Salam, Red Bull, e&, du, Ooredoo, Vodafone, Batelco, Omantel):
+
+```dart
+final phone = KhaleejPhone.parse('+966501234567');
+
+if (phone.isValid) {
+  print(phone.carrier?.nameEn); // 'STC'
+  print(phone.carrier?.nameAr); // 'إس تي سي'
+  print(phone.national);        // '050 123 4567'
+  print(phone.e164);            // '+966501234567'
+  print(phone.mask());          // '+966 50 *** 4567'
+}
+```
+
+---
+
+### 11. Synthetic QA Mock Data Generator (`KhaleejMock`)
+
+Generates mathematically and algorithmically valid synthetic test fixtures (passing Luhn, PACI Mod 11, and ISO 7064 Mod 97-10) for development without exposing real customer PII under KSA & UAE PDPL:
+
+```dart
+// Valid test IDs
+final mockSaudiId = KhaleejMock.saudiId(isCitizen: true);
+final mockEmiratesId = KhaleejMock.emiratesId(birthYear: 1995);
+final mockKuwaitId = KhaleejMock.kuwaitCivilId();
+
+// Valid test IBANs matching real GCC bank directories
+final mockIban = KhaleejMock.iban(GccCountry.saudiArabia, bankCode: '80'); // Al Rajhi Bank
+
+// Valid test cards for GCC domestic payment switches
+final mockMadaCard = KhaleejMock.card(GccDomesticSwitch.mada);
+final mockJaywanCard = KhaleejMock.card(GccDomesticSwitch.jaywan);
+
+// Valid test B2B entity IDs
+final mockCr = KhaleejMock.saudiCr(cityCode: '1010');
+final mock700 = KhaleejMock.saudi700();
+final mockTrn = KhaleejMock.uaeTrn();
 ```
 
 ---

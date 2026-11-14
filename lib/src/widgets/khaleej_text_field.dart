@@ -8,7 +8,10 @@ import '../identity/emirates_id.dart';
 import '../identity/kuwait_civil_id.dart';
 import '../identity/oman_civil_id.dart';
 import '../identity/qatar_id.dart';
+import '../identity/saudi_700.dart';
+import '../identity/saudi_cr.dart';
 import '../identity/saudi_id.dart';
+import '../identity/uae_trn.dart';
 import 'formatters.dart';
 
 /// Semantic input types supported by [KhaleejTextField].
@@ -30,6 +33,15 @@ enum KhaleejInputType {
 
   /// Oman Civil ID (8 digits).
   omanCivilId,
+
+  /// Saudi Commercial Registration (السجل التجاري - 10 digits).
+  saudiCr,
+
+  /// Saudi 700 Unified National Establishment Number (الرقم الموحد 700).
+  saudi700,
+
+  /// UAE Tax Registration Number (FTA TRN - 15 digits).
+  uaeTrn,
 
   /// GCC International Bank Account Number (IBAN).
   iban,
@@ -236,6 +248,9 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
       case KhaleejInputType.qatarId:
       case KhaleejInputType.bahrainCpr:
       case KhaleejInputType.omanCivilId:
+      case KhaleejInputType.saudiCr:
+      case KhaleejInputType.saudi700:
+      case KhaleejInputType.uaeTrn:
       case KhaleejInputType.cardNumber:
       case KhaleejInputType.cvv:
       case KhaleejInputType.sensitiveSecret:
@@ -269,6 +284,13 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
       case KhaleejInputType.omanCivilId:
         list.add(FilteringTextInputFormatter.digitsOnly);
         list.add(LengthLimitingTextInputFormatter(8));
+      case KhaleejInputType.saudiCr:
+      case KhaleejInputType.saudi700:
+        list.add(FilteringTextInputFormatter.digitsOnly);
+        list.add(LengthLimitingTextInputFormatter(10));
+      case KhaleejInputType.uaeTrn:
+        list.add(FilteringTextInputFormatter.digitsOnly);
+        list.add(LengthLimitingTextInputFormatter(15));
       case KhaleejInputType.iban:
         list.add(GccIbanInputFormatter());
       case KhaleejInputType.cardNumber:
@@ -302,6 +324,12 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
         return '900101234';
       case KhaleejInputType.omanCivilId:
         return '12345678';
+      case KhaleejInputType.saudiCr:
+        return '1010123456';
+      case KhaleejInputType.saudi700:
+        return '7001234567';
+      case KhaleejInputType.uaeTrn:
+        return '100123456780003';
       case KhaleejInputType.iban:
         return 'SA03 8000 0000 6080 1016 7519';
       case KhaleejInputType.cardNumber:
@@ -341,6 +369,15 @@ class _KhaleejTextFieldState extends State<KhaleejTextField> {
       case KhaleejInputType.omanCivilId:
         final res = OmanCivilId.parse(text);
         return res.isValid ? null : (res.validationError ?? 'Invalid Oman Civil ID');
+      case KhaleejInputType.saudiCr:
+        final res = SaudiCr.parse(text);
+        return res.isValid ? null : (res.validationError ?? 'Invalid Saudi CR');
+      case KhaleejInputType.saudi700:
+        final res = Saudi700Number.parse(text);
+        return res.isValid ? null : (res.validationError ?? 'Invalid Saudi 700 Number');
+      case KhaleejInputType.uaeTrn:
+        final res = UaeTrn.parse(text);
+        return res.isValid ? null : (res.validationError ?? 'Invalid UAE TRN');
       case KhaleejInputType.iban:
         final res = IbanValidator.validate(text);
         return res.isValid ? null : (res.errorMessage ?? 'Invalid GCC IBAN');

@@ -18,16 +18,21 @@ export 'src/core/gcc_country.dart';
 // Money & Tafqeet
 export 'src/money/khaleej_currency.dart';
 export 'src/money/khaleej_money.dart';
+export 'src/money/khaleej_zakat.dart';
 export 'src/money/tafqeet.dart';
 
 // Identity & Civil Cards
 export 'src/identity/bahrain_cpr.dart';
 export 'src/identity/emirates_id.dart';
+export 'src/identity/khaleej_business_id.dart';
 export 'src/identity/khaleej_id.dart';
 export 'src/identity/kuwait_civil_id.dart';
 export 'src/identity/oman_civil_id.dart';
 export 'src/identity/qatar_id.dart';
+export 'src/identity/saudi_700.dart';
+export 'src/identity/saudi_cr.dart';
 export 'src/identity/saudi_id.dart';
+export 'src/identity/uae_trn.dart';
 
 // Banking & IBAN
 export 'src/banking/bank_directory.dart';
@@ -48,14 +53,22 @@ export 'src/vat/zatca_qr.dart';
 // Security & Cryptography
 export 'src/security/khaleej_hash.dart';
 export 'src/security/pii_redactor.dart';
+export 'src/security/sama_pin_validator.dart';
 export 'src/security/sensitive_value.dart';
 export 'src/security/timing_safe.dart';
 export 'src/security/webhook_verifier.dart';
+
+// Telecom & Phone Intelligence
+export 'src/telecom/gcc_carrier.dart';
+export 'src/telecom/khaleej_phone.dart';
 
 // Arabic & Address Utilities
 export 'src/utils/address_validator.dart';
 export 'src/utils/arabic_normalizer.dart';
 export 'src/utils/numeral_converter.dart';
+
+// Synthetic Mock Data & QA Generator
+export 'src/mock/khaleej_mock.dart';
 
 // Widgets & Formatters
 export 'src/widgets/formatters.dart';

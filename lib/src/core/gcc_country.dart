@@ -120,6 +120,9 @@ enum GccCountry {
   /// Standard IBAN character length.
   final int ibanLength;
 
+  /// Numeric telephone calling code digits without '+' (e.g. '966' for KSA).
+  String get phoneCountryCode => dialCode.replaceAll('+', '');
+
   /// Finds a [GccCountry] by its ISO2, ISO3, or numeric code (case-insensitive).
   static GccCountry? fromCode(String code) {
     final clean = code.trim().toUpperCase();

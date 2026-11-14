@@ -221,6 +221,31 @@ enum KhaleejCurrency {
   /// BigInt subunit factor.
   BigInt get subunitFactorBigInt => BigInt.from(subunitFactor);
 
+  /// Official or central bank pegged exchange rate against 1 USD.
+  ///
+  /// - SAR: 3.7500 (SAMA official peg)
+  /// - AED: 3.6725 (CBUAE official peg)
+  /// - QAR: 3.6400 (QCB official peg)
+  /// - BHD: 0.3760 (CBB official peg)
+  /// - OMR: 0.3845 (CBO official peg)
+  /// - KWD: 0.3075 (CBK indicative weighted basket parity)
+  double get peggedRateToUsd {
+    switch (this) {
+      case KhaleejCurrency.sar:
+        return 3.7500;
+      case KhaleejCurrency.aed:
+        return 3.6725;
+      case KhaleejCurrency.qar:
+        return 3.6400;
+      case KhaleejCurrency.bhd:
+        return 0.3760;
+      case KhaleejCurrency.omr:
+        return 0.3845;
+      case KhaleejCurrency.kwd:
+        return 0.3075;
+    }
+  }
+
   /// Find currency by ISO code or symbol.
   static KhaleejCurrency? fromCode(String code) {
     final clean = code.trim().toUpperCase();

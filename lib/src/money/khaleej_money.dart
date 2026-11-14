@@ -27,6 +27,19 @@ class KhaleejMoney implements Comparable<KhaleejMoney> {
   factory KhaleejMoney.zero(KhaleejCurrency currency) =>
       KhaleejMoney.fromSubunits(BigInt.zero, currency);
 
+  /// Constructs a [KhaleejMoney] from a US Dollar amount using official central bank pegged parities.
+  ///
+  /// Example:
+  /// ```dart
+  /// final sar = KhaleejMoney.fromUsd(100, KhaleejCurrency.sar); // 375.00 SAR
+  /// ```
+  factory KhaleejMoney.fromUsd(num usdAmount, KhaleejCurrency targetCurrency) {
+    final rate = targetCurrency.peggedRateToUsd;
+    final factor = targetCurrency.subunitFactor;
+    final roundedSubunits = (usdAmount * rate * factor).round();
+    return KhaleejMoney.fromSubunits(BigInt.from(roundedSubunits), targetCurrency);
+  }
+
   /// Parses a string representing a monetary amount (e.g. "1,250.75" or "1250.750").
   factory KhaleejMoney.parse(String text, KhaleejCurrency currency) {
     final parsed = tryParse(text, currency);
@@ -157,6 +170,46 @@ class KhaleejMoney implements Comparable<KhaleejMoney> {
   /// Calculates a percentage of this monetary amount (e.g. `money.percentage(15)` for 15% VAT).
   KhaleejMoney percentage(num percent) {
     return this * (percent / 100.0);
+  }
+
+  /// Converts this monetary amount to another GCC currency using official central bank pegged parities.
+  ///
+  /// Conversions maintain integer subunit precision:
+  /// - SAR (3.7500 / USD)
+  /// - AED (3.6725 / USD)
+  /// - QAR (3.6400 / USD)
+  /// - BHD (0.3760 / USD)
+  /// - OMR (0.3845 / USD)
+  /// - KWD (0.3075 / USD)
+  ///
+  /// Example:
+  /// ```dart
+  /// final sar = KhaleejMoney.fromMajor(100, KhaleejCurrency.sar);
+  /// final aed = sar.convertToPegged(KhaleejCurrency.aed); // 97.93 AED
+  /// ```
+  KhaleejMoney convertToPegged(KhaleejCurrency targetCurrency) {
+    if (currency == targetCurrency) return this;
+
+    // Scale rates by 1,000,000 (6 decimal places) for high-precision integer arithmetic
+    const scale = 1000000;
+    final sourceRateScaled = BigInt.from((currency.peggedRateToUsd * scale).round());
+    final targetRateScaled = BigInt.from((targetCurrency.peggedRateToUsd * scale).round());
+    final sourceFactor = currency.subunitFactorBigInt;
+    final targetFactor = targetCurrency.subunitFactorBigInt;
+
+    // targetSubunits = (sourceSubunits * targetFactor * targetRateScaled) / (sourceFactor * sourceRateScaled)
+    final numerator = totalSubunits * targetFactor * targetRateScaled;
+    final denominator = sourceFactor * sourceRateScaled;
+
+    // Half-up integer rounding
+    final halfDenominator = denominator ~/ BigInt.from(2);
+    final isNegative = numerator < BigInt.zero;
+    final roundedNumerator = isNegative
+        ? numerator - halfDenominator
+        : numerator + halfDenominator;
+
+    final targetSubunits = roundedNumerator ~/ denominator;
+    return KhaleejMoney.fromSubunits(targetSubunits, targetCurrency);
   }
 
   @override

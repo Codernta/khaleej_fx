@@ -129,5 +129,34 @@ void main() {
 
       expect(controller.text, '784-1990-1234567-1');
     });
+
+    testWidgets('KhaleejTextField renders with B2B input types (Saudi CR, 700, UAE TRN)', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(
+            body: Column(
+              children: [
+                KhaleejTextField(
+                  inputType: KhaleejInputType.saudiCr,
+                  label: 'Saudi CR',
+                ),
+                KhaleejTextField(
+                  inputType: KhaleejInputType.saudi700,
+                  label: 'Unified 700 Number',
+                ),
+                KhaleejTextField(
+                  inputType: KhaleejInputType.uaeTrn,
+                  label: 'UAE TRN',
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('Saudi CR'), findsOneWidget);
+      expect(find.text('Unified 700 Number'), findsOneWidget);
+      expect(find.text('UAE TRN'), findsOneWidget);
+    });
   });
 }
